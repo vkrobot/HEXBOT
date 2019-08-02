@@ -1,0 +1,350 @@
+#include "teleop_joy.hpp"
+
+
+
+TeleopJoy::TeleopJoy(){
+
+
+	joy_sub = node.subscribe<sensor_msgs::Joy>("joy", 1, &TeleopJoy::joyCallback, this);
+        command_pub = node.advertise<crab_msgs::Buffer>("chatter",1);
+                
+                start_flag = false;
+//walk mode(mode1)
+                walk_mode=1;
+                rotate_mode=0;
+                translate_mode=0;
+                single_leg_mode=0;
+                GP_player_mode=0;
+       
+      xieyi=Hex_Set(MID,IID_Mode,len_1,Pra_Walk);    
+      command_pub.publish(xieyi);
+      ROS_INFO("walk mode");
+      ROS_INFO_STREAM("the data sending is  "<<xieyi);
+
+              
+
+
+//set the gait and leg flag
+                gait_count=0;  
+                gait_flag=0; 
+                leg_count=0;
+		leg_flag=0;
+ 
+//set the origin height and step
+                 bodylevel_flag=0;
+                 leglevel_flag=0;
+                 step_flag=0;
+
+}
+
+
+void TeleopJoy::joyCallback(const sensor_msgs::Joy::ConstPtr& joy){
+
+	if (joy->buttons[START]){
+		
+             if (!start_flag){
+	       start_flag = true;
+
+               xieyi=Hex_Set(MID,IID_Start,len_1,Switch_ON);
+               command_pub.publish(xieyi);  
+              
+                 ROS_INFO("START");
+                 ROS_INFO_STREAM("the data sending is  "<<xieyi);
+
+		}
+		else{
+			start_flag = false;
+
+               xieyi=Hex_Set(MID,IID_Start,len_1,Switch_OFF);
+               command_pub.publish(xieyi);	
+		
+                    ROS_INFO("STOP");
+                    ROS_INFO_STREAM("the data sending is  "<<xieyi);
+		}
+		ros::Duration(1).sleep();
+	}
+
+       if(start_flag){
+//it will work only when start_flag is true
+
+//ROTATE_MODE
+             if(joy->buttons[L2_ROTATE_MODE])  { 
+                   if(!rotate_mode) {
+                      walk_mode=0;
+                      rotate_mode=1;
+                      translate_mode=0;
+                      single_leg_mode=0;
+                      GP_player_mode=0;
+                     
+          xieyi=Hex_Set(MID,IID_Mode,len_1,Pra_Rotate);    
+              command_pub.publish(xieyi);
+              ROS_INFO("ROTATE_MODE");
+	     ROS_INFO_STREAM("the data sending is  "<<xieyi);
+
+                    }
+                   else{
+                      walk_mode=1;
+                      rotate_mode=0;
+                      translate_mode=0;
+                      single_leg_mode=0;
+                      GP_player_mode=0;
+		      
+              xieyi=Hex_Set(MID,IID_Mode,len_1,Pra_Walk);    
+              command_pub.publish(xieyi);
+              ROS_INFO("WALK_MODE");
+                    }
+		ros::Duration(1).sleep();
+                   
+                }
+
+
+//TRANSLATE_MODE
+             if(joy->buttons[L1_TRANSLATE_MODE])  { 
+                   if(!translate_mode) {
+                      walk_mode=0;
+                      rotate_mode=0;
+                      translate_mode=1;
+                      single_leg_mode=0;
+                      GP_player_mode=0;
+      xieyi=Hex_Set(MID,IID_Mode,len_1,Pra_Translate);   
+              command_pub.publish(xieyi);
+               ROS_INFO("TRANSLATE_MODE");
+      ROS_INFO_STREAM("the data sending is  "<<xieyi);
+
+                    }
+                   else {
+                      walk_mode=1;
+                      rotate_mode=0;
+                      translate_mode=0;
+                      single_leg_mode=0;
+                      GP_player_mode=0;
+	     
+       xieyi=Hex_Set(MID,IID_Mode,len_1,Pra_Walk);    
+              command_pub.publish(xieyi);
+                     ROS_INFO("WALK_MODE");
+      ROS_INFO_STREAM("the data sending is  "<<xieyi);
+
+                    }
+ 		ros::Duration(1).sleep();              
+                }
+
+//SINGLE_LEG_MODE
+             if(joy->buttons[SINGLE_LEG_MODE])  { 
+                   if(!single_leg_mode) {
+                      walk_mode=0;
+                      rotate_mode=0;
+                      translate_mode=0;
+                      single_leg_mode=1;
+                      GP_player_mode=0;
+               
+//publish the xieyi
+
+           //  test();
+       xieyi=Hex_Set(MID,IID_Mode,len_1,Pra_Single_Leg);   
+       command_pub.publish(xieyi);
+             //  ModeSet(0x04);
+	     //  command_pub.publish(xieyi);
+
+//show message
+	      ROS_INFO("SINGLE_LEG_MODE");
+      ROS_INFO_STREAM("the data sending is  "<<xieyi); 
+
+                    }
+                   else{
+                      walk_mode=1;
+                      rotate_mode=0;
+                      translate_mode=0;
+                      single_leg_mode=0;
+                      GP_player_mode=0;
+
+       xieyi=Hex_Set(MID,IID_Mode,len_1,Pra_Walk);
+      //ROS_INFO_STREAM("the data sending is  "<<xieyi);    
+      command_pub.publish(xieyi);
+
+                     ROS_INFO("WALK_MODE");
+      ROS_INFO_STREAM("the data sending is  "<<xieyi); 
+  
+
+                    }
+		ros::Duration(1).sleep();
+                  
+                }
+
+//GP_PLAYER_MODE
+             if(joy->buttons[GP_PLAYER_MODE])  { 
+                   if(!single_leg_mode) {
+                      walk_mode=0;
+                      rotate_mode=0;
+                      translate_mode=0;
+                      single_leg_mode=1;
+                      GP_player_mode=0;
+
+       xieyi=Hex_Set(MID,IID_Mode,len_1,Pra_GP_Player);    
+      command_pub.publish(xieyi);
+                    ROS_INFO("GP_PLAYER_MODE");
+      ROS_INFO_STREAM("the data sending is  "<<xieyi); 
+
+                    }
+                   else{
+                      walk_mode=1;
+                      rotate_mode=0;
+                      translate_mode=0;
+                      single_leg_mode=0;
+                      GP_player_mode=0;
+
+       xieyi=Hex_Set(MID,IID_Mode,len_1,Pra_Walk);    
+               command_pub.publish(xieyi);
+                     ROS_INFO("WALK_MODE");
+      ROS_INFO_STREAM("the data sending is  "<<xieyi); 
+
+                    }
+		ros::Duration(1).sleep();
+                }
+
+
+//change legs level 
+       if(joy->buttons[R1])  { 
+
+              if (!leglevel_flag){
+	         leglevel_flag = true;
+
+               xieyi=Hex_Set(MID,IID_LegLevel,len_1,LegLevel1);
+               command_pub.publish(xieyi);  
+              
+                 ROS_INFO("LegLevel1");
+                 ROS_INFO_STREAM("the data sending is  "<<xieyi);
+
+		}
+		else{
+			leglevel_flag = false;
+
+               xieyi=Hex_Set(MID,IID_LegLevel,len_1,LegLevel2);
+               command_pub.publish(xieyi);	
+		
+                    ROS_INFO("LegLevel2");
+                    ROS_INFO_STREAM("the data sending is  "<<xieyi);
+		}
+		ros::Duration(1).sleep();
+              }
+
+//change step
+             if(joy->buttons[R2])  { 
+
+              if (!step_flag){
+	         step_flag = true;
+
+               xieyi=Hex_Set(MID,IID_StepSize,len_1,StepSize1);
+               command_pub.publish(xieyi);  
+              
+                 ROS_INFO("StepSize1");
+                 ROS_INFO_STREAM("the data sending is  "<<xieyi);
+
+		}
+		else{
+			step_flag = false;
+
+               xieyi=Hex_Set(MID,IID_StepSize,len_1,StepSize2);
+               command_pub.publish(xieyi);	
+		
+                    ROS_INFO("StepSize2");
+                    ROS_INFO_STREAM("the data sending is  "<<xieyi);
+		}
+		ros::Duration(1).sleep();
+              }
+
+ //body up
+         if(joy->buttons[BODY_UP])  {
+
+       xieyi=Hex_Set(MID,IID_PlatformLevel,len_1,BodyLevel1);    
+      command_pub.publish(xieyi);
+            ROS_INFO("Body up");
+      ROS_INFO_STREAM("the data sending is  "<<xieyi); 
+ 
+  
+		ros::Duration(1).sleep();
+         }
+ 
+ 
+
+ //speed up
+         if(joy->buttons[SPEED_UP])  {
+
+       xieyi=Hex_Set(MID,IID_Speed,len_1,Speed1);    
+      command_pub.publish(xieyi);
+            ROS_INFO("Speed1");
+      ROS_INFO_STREAM("the data sending is  "<<xieyi); 
+ 
+  
+		ros::Duration(1).sleep();
+         }  
+ 
+      
+//when in walk_mode,press joy->buttons[SELECT] to select a gait.
+         if(walk_mode  && joy->buttons[SELECT])  {
+ 
+             gait_count++;
+             gait_flag=gait_count%6; 
+       xieyi=Hex_Set(MID,IID_Gait,len_1,gait_flag);    
+      command_pub.publish(xieyi);
+            ROS_INFO("the gait_mode is  gait%1d",gait_flag);
+      ROS_INFO_STREAM("the data sending is  "<<xieyi); 
+ 
+  
+		ros::Duration(1).sleep();
+         }
+
+
+//when in single_leg_mode,press joy->buttons[SELECT] to select a leg.
+         if(single_leg_mode  && joy->buttons[SELECT])  {
+  
+              leg_count++;
+              leg_flag=leg_count%6;
+       xieyi=Hex_Set(MID,IID_Gait,len_1,gait_flag);    
+      command_pub.publish(xieyi);
+             ROS_INFO("the leg working is leg%1d ",leg_flag);
+
+		ros::Duration(1).sleep();
+           }
+
+
+//when joy->axes[0,1,2,3] is not 0,send their value 
+        if(joy->axes[LX] !=0 || joy->axes[LY] !=0 || joy->axes[RX] !=0 || joy->axes[RY]!=0 )  {
+      zero_flag=0;
+      xieyi=WalkSet(MID,IID_Walk,len_4,(int)(127*(joy->axes[LX])+127),(int)(127*(joy->axes[LY])+127),(int)(127*(joy->axes[RX])+127),(int)(127*(joy->axes[RY])+127));    
+      command_pub.publish(xieyi);
+
+             ROS_INFO("LX=%1d,LY=%1d,RX=%1d,RY=%1d",(int)(127*(joy->axes[LX])+127),(int)(127*(joy->axes[LY])+127),(int)(127*(joy->axes[RX])+127),(int)(127*(joy->axes[RY])+127));
+
+      ROS_INFO_STREAM("the data sending is  "<<xieyi); 
+
+ //publish the xieyi
+
+          }     
+    
+        if(joy->axes[LX]==0  && joy->axes[LY]==0 && joy->axes[RX]==0 && joy->axes[RY]==0 && zero_flag==0)  {
+
+      zero_flag=1;
+      for(int i=0;i<10;i++) {
+      xieyi=WalkSet(MID,IID_Walk,len_4,0x7F,0x7F,0x7F,0x7F);    
+      command_pub.publish(xieyi);
+		ros::Duration(0.1).sleep();
+      ROS_INFO_STREAM("the data sending is  "<<xieyi);
+      }
+
+          }   
+    }
+
+
+}
+
+
+int main(int argc, char **argv)
+{
+	ros::init(argc, argv, "teleop_joy");
+	ROS_INFO("Starting ps3 teleop converter, take care of your controller now...");
+	test();
+ 
+        TeleopJoy teleop_joy;
+	ros::spin();
+//    return 0;
+}
